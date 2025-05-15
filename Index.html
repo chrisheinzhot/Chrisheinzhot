@@ -1,1 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Goofy Image Effects</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
+            color: white;
+            overflow: hidden;
+        }
+        
+        .container {
+            position: relative;
+            text-align: center;
+        }
+        
+        .image-container {
+            position: relative;
+            margin: 20px;
+        }
+        
+        #image {
+            max-width: 80vw;
+            max-height: 60vh;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+            transition: all 0.3s ease;
+        }
+        
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        button {
+            background-color: #ff44aa;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+        
+        button:hover {
+            transform: scale(1.05);
+            background-color: #ff66bb;
+        }
+        
+        .drop-zone {
+            border: 2px dashed #ffffff;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        
+        .upload-text {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .rainbow-border {
+            animation: rainbow-border 3s linear infinite;
+        }
+        
+        @keyframes rainbow-border {
+            0% { box-shadow: 0 0 20px rgba(255, 0, 0, 0.8); }
+            20% { box-shadow: 0 0 20px rgba(255, 165, 0, 0.8); }
+            40% { box-shadow: 0 0 20px rgba(255, 255, 0, 0.8); }
+            60% { box-shadow: 0 0 20px rgba(0, 255, 0, 0.8); }
+            80% { box-shadow: 0 0 20px rgba(0, 0, 255, 0.8); }
+            100% { box-shadow: 0 0 20px rgba(255, 0, 0, 0.8); }
+        }
+        
+        .wiggle {
+            animation: wiggle 0.5s infinite;
+        }
+        
+        @keyframes wiggle {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(-5deg); }
+            50% { transform: rotate(0deg); }
+            75% { transform: rotate(5deg); }
+            100% { transform: rotate(0deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>GOOFY IMAGE EFFECTS</h1>
+        
+        <div class="drop-zone" id="dropZone">
+            <p class="upload-text">Drop your image here or click to upload</p>
+            <p>(Or use the default placeholder image)</p>
+            <input type="file" accept="image/*" id="fileInput" class="file-input">
+        </div>
+        
+        <div class="image-container">
+            <img id="image" src="/api/placeholder/600/400" alt="Upload an image or use this placeholder">
+        </div>
+        
+        <div class="controls">
+            <button id="rainbowBtn">Rainbow Border</button>
+            <button id="rotateBtn">Rotate</button>
+            <button id="blurBtn">Blur</button>
+            <button id="wiggleBtn">Wiggle</button>
+            <button id="invertBtn">Invert Colors</button>
+            <button id="resetBtn">Reset</button>
+        </div>
+    </div>
 
+    <script>
+        // DOM elements
+        const image = document.getElementById('image');
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const rainbowBtn = document.getElementById('rainbowBtn');
+        const rotateBtn = document.getElementById('rotateBtn');
+        const blurBtn = document.getElementById('blurBtn');
+        const wiggleBtn = document.getElementById('wiggleBtn');
+        const invertBtn = document.getElementById('invertBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        
+        // Default image for reset
+        const defaultImageSrc = '/api/placeholder/600/400';
+        
+        // Track rotation angle
+        let rotationAngle = 0;
+        let isBlurred = false;
+        let isInverted = false;
+        
+        // File upload handling
+        dropZone.addEventListener('click', () => fileInput.click());
+        
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = '#ff44aa';
+        });
+        
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.style.borderColor = '#ffffff';
+        });
+        
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = '#ffffff';
+            
+            if (e.dataTransfer.files.length) {
+                handleFile(e.dataTransfer.files[0]);
+            }
+        });
+        
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length) {
+                handleFile(fileInput.files[0]);
+            }
+        });
+        
+        function handleFile(file) {
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    image.src = e.target.result;
+                    resetEffects();
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+        
+        // Effect buttons
+        rainbowBtn.addEventListener('click', () => {
+            image.classList.toggle('rainbow-border');
+        });
+        
+        rotateBtn.addEventListener('click', () => {
+            rotationAngle += 90;
+            if (rotationAngle >= 360) rotationAngle = 0;
+            image.style.transform = `rotate(${rotationAngle}deg)`;
+        });
+        
+        blurBtn.addEventListener('click', () => {
+            isBlurred = !isBlurred;
+            image.style.filter = isBlurred 
+                ? `blur(5px)${isInverted ? ' invert(100%)' : ''}` 
+                : isInverted ? 'invert(100%)' : 'none';
+        });
+        
+        wiggleBtn.addEventListener('click', () => {
+            image.classList.toggle('wiggle');
+        });
+        
+        invertBtn.addEventListener('click', () => {
+            isInverted = !isInverted;
+            image.style.filter = isInverted 
+                ? `invert(100%)${isBlurred ? ' blur(5px)' : ''}` 
+                : isBlurred ? 'blur(5px)' : 'none';
+        });
+        
+        resetBtn.addEventListener('click', () => {
+            image.src = defaultImageSrc;
+            resetEffects();
+        });
+        
+        function resetEffects() {
+            image.classList.remove('rainbow-border', 'wiggle');
+            image.style.transform = 'rotate(0deg)';
+            image.style.filter = 'none';
+            rotationAngle = 0;
+            isBlurred = false;
+            isInverted = false;
+        }
+    </script>
+</body>
+</html>
